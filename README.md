@@ -8,6 +8,7 @@ This Page has a Top Menu Bar with different links to:
 - Register Event page (Here you can add new events)
 - Register User page (Here you can register an user)
 - Login page (Here you can login with your user)
+- Routing for non-existent pages is in app.razor
 
 ## Features
 - The Events page uses mock data to display 6 default events
