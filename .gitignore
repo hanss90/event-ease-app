@@ -1,0 +1,61 @@
+# Ignore build output directories
+bin/
+obj/
+
+# Ignore user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore Rider project files
+.idea/
+
+# Ignore Visual Studio Code workspace settings
+.vscode/
+
+# Ignore temporary files
+*.tmp
+*.log
+*.vspscc
+*.vssscc
+
+# Ignore publish output
+wwwroot/
+
+# Ignore dependency directories
+node_modules/
+lib/
+
+# Ignore package manager files
+*.nupkg
+*.snupkg
+*.lock.json
+
+# Ignore coverage reports
+coverage/
+*.coverage
+*.coveragexml
+*.codecov
+
+# Ignore other files
+*.DS_Store
+*.swp
+*.swo
+*.bak
+*.orig
+*.rej
+*.class
+*.pyc
+*.pyo
+*.pyd
+*.pid
+*.seed
+*.seed.text
+*.log
+*.csv
+*.out
+*.err
+*.log
+*.log.*
+*.log-*

@@ -1,0 +1,71 @@
+@page "/events"
+@using EventEaseApp.Services
+@inject EventService EventService
+
+@code {
+    public List<Models.Event>? events;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await EventService.GetEventsAsync();
+        isLoading = false;
+    }
+
+    private async Task AddEvent()
+    {
+        var newEvent = new Models.Event
+        {
+            EventId = 0,
+            EventName = "New Event",
+            EventDate = DateTime.Now,
+            EventLocation = "New Location",
+            EventDescription = "New Description"
+        };
+        await EventService.AddEventAsync(newEvent);
+        events = await EventService.GetEventsAsync(); // Refresh the event list
+    }
+
+    private async Task UpdateEvent(Models.Event eventItem, int newId, string newName, DateTime newDate, string newLocation,
+    string newDescription)
+    {
+        eventItem.EventId = newId;
+        eventItem.EventName = newName;
+        eventItem.EventDate = newDate;
+        eventItem.EventLocation = newLocation;
+        eventItem.EventDescription = newDescription;
+        await EventService.UpdateEventAsync(eventItem);
+        events = await EventService.GetEventsAsync(); // Refresh the event list
+    }
+}
+
+@if (isLoading)
+{
+    <p>Loading events...</p>
+}
+else
+{
+    <div class="container">
+        <div class="row justify-content-center">
+            @if (events != null && events.Count > 0)
+            {
+                @foreach (var eventItem in events)
+                {
+                    <div class="col-12 col-sm-6 col-md-4 mb-4">
+                        <EventCard @key="eventItem.EventId" EventId="@eventItem.EventId" EventName="@eventItem.EventName"
+                            EventDate="@eventItem.EventDate" EventLocation="@eventItem.EventLocation"
+                            EventDescription="@eventItem.EventDescription"
+                            EventNameChanged="@(newName => UpdateEvent(eventItem, eventItem.EventId, newName, eventItem.EventDate, eventItem.EventLocation, eventItem.EventDescription))"
+                            EventDateChanged="@(newDate => UpdateEvent(eventItem, eventItem.EventId, eventItem.EventName, newDate, eventItem.EventLocation, eventItem.EventDescription))"
+                            EventLocationChanged="@(newLocation => UpdateEvent(eventItem, eventItem.EventId, eventItem.EventName, eventItem.EventDate, newLocation, eventItem.EventDescription))"
+                            EventDescriptionChanged="@(newDescription => UpdateEvent(eventItem, eventItem.EventId, eventItem.EventName, eventItem.EventDate, eventItem.EventLocation, newDescription))" />
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No events found.</p>
+            }
+        </div>
+    </div>
+}

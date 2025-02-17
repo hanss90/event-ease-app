@@ -1,0 +1,45 @@
+﻿@page "/"
+@using EventEaseApp.Services
+@inject UserSessionService UserSessionService
+
+<PageTitle>Home</PageTitle>
+
+<div class="text-center">
+    <h1>@GetGreeting()!</h1>
+    <p>Welcome to your new app.</p>
+</div>
+
+@code {
+    private string GetGreeting()
+    {
+        var hour = DateTime.Now.Hour;
+        string prefix;
+        if (IsInRange(hour, 6, 11))
+        {
+            prefix = "Good morning";
+        }
+        else if (IsInRange(hour, 12, 17))
+        {
+            prefix = "Good afternoon";
+        }
+        else if (IsInRange(hour, 18, 20))
+        {
+            prefix = "Good evening";
+        }
+        else
+        {
+            prefix = "Good night";
+        }
+        string suffix = "new Visitor";
+        if (UserSessionService.IsSessionActive())
+        {
+            suffix = UserSessionService.UserName;
+        }
+        return $"{prefix}, {suffix}";
+    }
+
+    private bool IsInRange(int value, int min, int max)
+    {
+        return value >= min && value <= max;
+    }
+}

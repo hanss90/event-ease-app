@@ -1,0 +1,94 @@
+﻿@using EventEaseApp.Services
+@inject UserSessionService UserSessionService
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">EventEaseApp</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav d-flex justify-content-between align-items-center w-100">
+                <li class="nav-item">
+                    <NavLink class="btn btn-link nav-link" href="" Match="NavLinkMatch.All">
+                        <span class="bi bi-house-door-fill" aria-hidden="true"></span> Home
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="btn btn-link nav-link" href="events">
+                        <span class="bi bi-calendar2-event-fill" aria-hidden="true"></span> Events
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="btn btn-link nav-link" href="event-registration">
+                        <span class="bi bi-plus-square-fill" aria-hidden="true"></span> Register Event
+                    </NavLink>
+                </li>
+                @* <li class="nav-item">
+                    <NavLink class="nav-link" href="counter">
+                        <span class="bi bi-plus-square-fill" aria-hidden="true"></span> Counter
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="weather">
+                        <span class="bi bi-list-nested" aria-hidden="true"></span> Weather
+                    </NavLink>
+                </li> *@
+                <li class="nav-item">
+                    <NavLink class="btn btn-link nav-link" href="user-registration">
+                        <span class="bi bi-person-plus-fill" aria-hidden="true"></span> Register User
+                    </NavLink>
+                </li>
+                @if (UserSessionService.IsSessionActive())
+                {
+                    <li class="nav-item">
+                        <NavLink class="btn btn-link nav-link" href="profile">
+                            <span class="bi bi-person-circle" aria-hidden="true"></span> Profile
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-link nav-link" @onclick="Logout">
+                            <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Logout
+                        </button>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <NavLink class="btn btn-link nav-link" href="login">
+                            <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span> Login
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        UserSessionService.SessionChanged += StateHasChanged;
+    }
+
+    void IDisposable.Dispose()
+    {
+        UserSessionService.SessionChanged -= StateHasChanged;
+    }
+
+    private void Logout()
+    {
+        UserSessionService.EndSession();
+        NavigationManager.NavigateTo("/");
+    }
+}
+
+<style>
+    body {
+        padding-top: 3.5rem;
+    }
+</style>

@@ -1,0 +1,48 @@
+@using EventEaseApp.Models
+@using EventEaseApp.Services
+@inject UserSessionService UserSessionService
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+
+<div class="container mt-5">
+    <h3>Events you are attending, @UserSessionService.UserName:</h3>
+    <div class="events-container">
+        @foreach (var eventItem in UserService.GetUserAsync(UserSessionService.UserName).Result.AttendingEvents)
+        {
+            <div class="event-item">
+                <h4>@eventItem.EventName</h4>
+                <p>@eventItem.EventDate.ToShortDateString()</p>
+                <p>@eventItem.EventLocation</p>
+                <button class="btn btn-danger" @onclick="() => RemoveEvent(eventItem.EventId)">Remove</button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private async Task RemoveEvent(int eventId)
+    {
+        var currentUser = UserService.GetUserAsync(UserSessionService.UserName).Result;
+        await currentUser.RemoveEventAsync(eventId);
+    }
+}
+<style>
+    .events-container {
+        max-height: 25rem;
+        overflow-y: auto;
+        border: 0.0625rem solid #ccc;
+        padding: 0.625rem;
+        border-radius: 0.3125rem;
+    }
+
+    .event-item {
+        border: 0.0625rem solid #ddd;
+        padding: 0.625rem;
+        margin-bottom: 0.625rem;
+        border-radius: 0.3125rem;
+    }
+
+    .event-item h4 {
+        margin-top: 0;
+    }
+</style>

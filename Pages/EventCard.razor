@@ -1,0 +1,241 @@
+@using System.ComponentModel.DataAnnotations
+@using EventEaseApp.Models
+@using Microsoft.AspNetCore.Components.Forms
+@using EventEaseApp.Services
+@inject UserSessionService UserSessionService
+@inject UserService UserService
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    [Parameter]
+    public string EventName { get; set; }
+
+    [Parameter]
+    public DateTime EventDate { get; set; }
+
+    [Parameter]
+    public string EventLocation { get; set; }
+
+    [Parameter]
+    public string EventDescription { get; set; }
+
+    [Parameter]
+    public EventCallback<string> EventNameChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime> EventDateChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<string> EventLocationChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<string> EventDescriptionChanged { get; set; }
+
+    private EditContext editContext;
+    private Event eventModel;
+    private bool isEditMode = false;
+    private bool isModalOpen = false;
+    private User currentUser;
+
+    protected override void OnInitialized()
+    {
+        eventModel = new Event
+        {
+            EventId = EventId,
+            EventName = EventName,
+            EventDate = EventDate,
+            EventLocation = EventLocation,
+            EventDescription = EventDescription
+        };
+        editContext = new EditContext(eventModel);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserSessionService.IsSessionActive())
+        {
+            await ReloadUser();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (UserSessionService.IsSessionActive())
+        {
+            await ReloadUser();
+        }
+    }
+
+    private async Task ReloadUser()
+    {
+        currentUser = await UserService.GetUserAsync(UserSessionService.UserName);
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await EventNameChanged.InvokeAsync(eventModel.EventName);
+        await EventDateChanged.InvokeAsync(eventModel.EventDate);
+        await EventLocationChanged.InvokeAsync(eventModel.EventLocation);
+        await EventDescriptionChanged.InvokeAsync(eventModel.EventDescription);
+        isEditMode = false;
+        isModalOpen = false;
+    }
+
+    private async Task AttendButtonClicked()
+    {
+        if (UserSessionService.IsSessionActive())
+        {
+            await currentUser.AddEventAsync(eventModel);
+            await ReloadUser();
+        }
+    }
+
+    private void ToggleEditMode()
+    {
+        isEditMode = !isEditMode;
+    }
+
+    private void ToggleModal()
+    {
+        isModalOpen = !isModalOpen;
+    }
+}
+
+<div class="event-card" @onclick="ToggleModal">
+    <h3>@EventName</h3>
+    <p>Date: @EventDate.ToShortDateString()</p>
+    <p>Location: @EventLocation</p>
+</div>
+
+@if (isModalOpen)
+{
+    <div class="modal show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@EventName</h5>
+                    @* <button type="button" class="close" @onclick="ToggleModal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button> *@
+                </div>
+                <div class="modal-body">
+                    @if (isEditMode)
+                    {
+                        <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div>
+                                <p>
+                                    Name:
+                                    <InputText id="eventName" class="form-control" @bind-Value="eventModel.EventName" />
+                                    <ValidationMessage For="@(() => eventModel.EventName)" />
+                                </p>
+                                <p>
+                                    Date:
+                                    <InputDate id="eventDate" class="form-control" @bind-Value="eventModel.EventDate" />
+                                    <ValidationMessage For="@(() => eventModel.EventDate)" />
+                                </p>
+                                <p>
+                                    Location:
+                                    <InputText id="eventLocation" class="form-control" @bind-Value="eventModel.EventLocation" />
+                                    <ValidationMessage For="@(() => eventModel.EventLocation)" />
+                                </p>
+                                <p>
+                                    Description:
+                                    <InputTextArea id="eventDescription" class="form-control non-resizable"
+                                        @bind-Value="eventModel.EventDescription" rows="5" />
+                                    <ValidationMessage For="@(() => eventModel.EventDescription)" />
+                                </p>
+                                <div class="button-group">
+                                    <button type="submit" class="btn btn-primary save-button">Save</button>
+                                    <button type="button" class="btn btn-secondary btn-sm cancel-button"
+                                        @onclick="ToggleEditMode">Cancel</button>
+                                </div>
+                            </div>
+                        </EditForm>
+                    }
+                    else
+                    {
+                        <div>
+                            <p>Date: @EventDate.ToShortDateString()</p>
+                            <p>Location: @EventLocation</p>
+                            <p>Description: @EventDescription</p>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    @if (!isEditMode)
+                    {
+                        @if (UserSessionService.IsSessionActive() && currentUser != null)
+                        {
+                            if (currentUser.AttendingEvents.Any(e => e.EventId == eventModel.EventId))
+                            {
+                                <p style="margin-right: auto; font-style: italic;">You are attending this event.</p>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-primary" style="margin-right: auto;"
+                                    @onclick="AttendButtonClicked">Attend</button>
+                            }
+                        }
+                        <button type="button" class="btn btn-secondary" @onclick="ToggleEditMode">Edit</button>
+                    }
+                    <button type="button" class="btn btn-secondary" @onclick="ToggleModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .event-card {
+        border: 1px solid #ccc;
+        padding: 16px;
+        margin: 16px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .event-card h3 {
+        margin-top: 0;
+    }
+
+    .non-resizable {
+        resize: none;
+    }
+
+    .edit-button {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+    }
+
+    .button-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 16px;
+    }
+
+    .attend-button {
+        align-self: flex-start;
+    }
+
+    .save-button {
+        align-self: flex-start;
+    }
+
+    .cancel-button {
+        align-self: flex-end;
+    }
+
+    .modal.show {
+        display: block;
+    }
+</style>

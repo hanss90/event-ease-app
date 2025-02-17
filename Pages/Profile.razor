@@ -1,0 +1,38 @@
+@page "/profile"
+@using EventEaseApp.Services
+@inject UserSessionService UserSessionService
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Profile</PageTitle>
+
+@if (UserSessionService.IsSessionActive())
+{
+    <div class="text-center" style="margin-bottom: 5rem;">
+        <h1>Welcome to your profile, @UserSessionService.UserName!</h1>
+    </div>
+
+    @if (!UserService.GetUserAsync(UserSessionService.UserName).Result.AttendingEvents.Any())
+    {
+        <div class="text-center">
+            <p>
+                You are not attending any events.
+            </p>
+        </div>
+    }
+    else
+    {
+        <Attendance @ref="attendance" />
+    }
+}
+else
+{
+    <div class="alert alert-warning mt-5">
+        You need to be logged in to view this page..
+    </div>
+}
+
+@code
+{
+    private Attendance attendance;
+}

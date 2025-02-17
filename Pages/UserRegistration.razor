@@ -1,0 +1,98 @@
+@page "/user-registration"
+@using EventEaseApp.Models
+@using EventEaseApp.Services
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+
+@code {
+    private User newUser = new User();
+    private string successMessage;
+    private string errorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        var result = await UserService.RegisterUserAsync(newUser);
+        if (result)
+        {
+            successMessage = "User registered successfully!";
+            errorMessage = string.Empty;
+            newUser = new User(); // Reset the form
+        }
+        else
+        {
+            errorMessage = "User registration failed. Please try again.";
+            successMessage = string.Empty;
+        }
+    }
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <EditForm Model="newUser" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3 row">
+                    <label for="userName" class="col-sm-2 col-form-label">Username:</label>
+                    <div class="col-sm-10">
+                        <InputText id="userName" class="form-control" @bind-Value="newUser.UserName" />
+                        <ValidationMessage For="@(() => newUser.UserName)" />
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="email" class="col-sm-2 col-form-label">Email:</label>
+                    <div class="col-sm-10">
+                        <InputText id="email" class="form-control" @bind-Value="newUser.Email" />
+                        <ValidationMessage For="@(() => newUser.Email)" />
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="password" class="col-sm-2 col-form-label">Password:</label>
+                    <div class="col-sm-10">
+                        <InputText id="password" type="password" class="form-control" @bind-Value="newUser.Password" />
+                        <ValidationMessage For="@(() => newUser.Password)" />
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <div class="alert alert-success">@successMessage</div>
+                }
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+
+                <div class="row">
+                    <div class="col-sm-10 offset-sm-2">
+                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    input,
+    button {
+        padding: 8px;
+        margin-top: 4px;
+    }
+
+    .alert {
+        margin-top: 16px;
+    }
+</style>

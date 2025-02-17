@@ -1,0 +1,99 @@
+@page "/event-registration"
+@using EventEaseApp.Models
+@using EventEaseApp.Services
+@inject EventService EventService
+@inject NavigationManager NavigationManager
+
+@code {
+    private Event newEvent = new Event
+    {
+        EventDate = DateTime.Now
+    };
+
+    private string successMessage;
+
+    private void HandleValidSubmit()
+    {
+        EventService.AddEventAsync(newEvent);
+        @* NavigationManager.NavigateTo("/events"); *@
+        successMessage = $"Event '{newEvent.EventName}' has been added!";
+        newEvent = new Event { EventDate = DateTime.Now }; // Reset the form
+    }
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <EditForm Model="newEvent" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3 row">
+                    <label for="eventName" class="col-sm-2 col-form-label">Event Name:</label>
+                    <div class="col-sm-10">
+                        <InputText id="eventName" class="form-control" @bind-Value="newEvent.EventName" />
+                        <ValidationMessage For="@(() => newEvent.EventName)" />
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="eventDate" class="col-sm-2 col-form-label">Event Date:</label>
+                    <div class="col-sm-10">
+                        <InputDate id="eventDate" class="form-control" @bind-Value="newEvent.EventDate" />
+                        <ValidationMessage For="@(() => newEvent.EventDate)" />
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="eventLocation" class="col-sm-2 col-form-label">Event Location:</label>
+                    <div class="col-sm-10">
+                        <InputText id="eventLocation" class="form-control" @bind-Value="newEvent.EventLocation" />
+                        <ValidationMessage For="@(() => newEvent.EventLocation)" />
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="eventDescription" class="col-sm-2 col-form-label">Event Description:</label>
+                    <div class="col-sm-10">
+                        <InputTextArea id="eventDescription" class="form-control non-resizable" @bind-Value="newEvent.EventDescription" rows="5" />
+                        <ValidationMessage For="@(() => newEvent.EventDescription)" />
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <div class="alert alert-success">@successMessage</div>
+                }
+
+                <div class="row">
+                    <div class="col-sm-10 offset-sm-2">
+                        <button type="submit" class="btn btn-primary w-100">Add Event</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    input,
+    button {
+        padding: 8px;
+        margin-top: 4px;
+    }
+
+    .alert {
+        margin-top: 16px;
+    }
+
+    .non-resizable {
+        resize: none;
+    }
+</style>
